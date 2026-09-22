@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>VKU Field Survey - Khảo sát cơ sở vật chất Offline-First</title>
+
+  <!-- PWA Metadata -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0054A6">
+  <meta name="description" content="Ứng dụng kiểm định cơ sở vật chất trường Đại học CNTT & TT Việt - Hàn (VKU) hoạt động Offline-First không cần mạng">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VKU Survey">
+
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/png" sizes="64x64" href="./assets/icons/favicon.png">
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192x192.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/components.css">
+</head>
+<body>
+
+  <!-- Toast Notification Stack -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Offline Warning Banner -->
+  <div id="offline-banner" class="offline-banner" role="status">
+    <span>📡</span>
+    <span>Chế độ Ngoại tuyến: Không có kết nối mạng. Toàn bộ dữ liệu đang được lưu trữ an toàn trong IndexedDB!</span>
+  </div>
+
+  <!-- Main Sticky Header -->
+  <header class="app-header">
+    <div class="container header-inner">
+      <!-- Logo & Title -->
+      <a href="#new-survey" class="brand-wrapper">
+        <img src="./assets/icons/icon.svg" alt="VKU Logo" class="brand-logo">
+        <div class="brand-titles">
+          <div class="brand-title-main">
+            VKU SURVEY
+            <span class="brand-title-badge">PWA</span>
+          </div>
+          <span class="brand-subtitle">Cơ sở vật chất VKU • Offline-First</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Tabs -->
+      <nav class="desktop-nav" aria-label="Điều hướng chính">
+        <button type="button" class="nav-tab-btn active" data-tab="new-survey">
+          <span>📝</span>
+          <span>Khảo sát mới</span>
+        </button>
+        <button type="button" class="nav-tab-btn" data-tab="surveys-list">
+          <span>📋</span>
+          <span>Danh sách</span>
+        </button>
+        <button type="button" class="nav-tab-btn" data-tab="stats">
+          <span>📊</span>
+          <span>Thống kê</span>
+        </button>
+        <button type="button" class="nav-tab-btn" data-tab="settings">
+          <span>⚙️</span>
+          <span>Cài đặt</span>
+        </button>
+      </nav>
+
+      <!-- Connection Status & Sync Trigger -->
+      <div class="header-actions">
+        <div id="connection-status-pill" class="status-pill online" title="Trạng thái kết nối mạng">
+          <span class="status-dot"></span>
+          <span id="status-text">Trực tuyến</span>
+        </div>
+
+        <button type="button" id="btn-header-sync" class="btn-sync-header" title="Đồng bộ dữ liệu với máy chủ trường VKU">
+          <span>☁️</span>
+          <span>Đồng bộ</span>
+          <span id="sync-counter-badge" class="sync-badge-counter" style="display:none;">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="main-content container">
+
+    <!-- VIEW 1: NEW INSPECTION SURVEY -->
+    <section id="view-new-survey" class="app-view-section active">
+      <!-- PWA Install Banner -->
+      <div id="install-pwa-banner" class="install-pwa-banner">
+        <div class="install-banner-text">
+          <h4>Cài đặt ứng dụng VKU Field Survey</h4>
+          <p>Trải nghiệm ứng dụng toàn màn hình mượt mà, lưu trữ độc lập không cần trình duyệt web.</p>
+        </div>
+        <button type="button" id="btn-install-pwa" class="btn btn-gold" style="padding: 8px 16px; font-size: 0.85rem;">
+          📲 Cài đặt ngay
+        </button>
+      </div>
+
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">
+            <span>📋</span>
+            <span>Biên bản kiểm tra & khảo sát</span>
+          </h1>
+          <p class="view-desc">Ghi nhận tình trạng cơ sở vật chất khuôn viên trường VKU (Hỗ trợ 100% khi mất mạng)</p>
+        </div>
+      </div>
+
+      <!-- Survey Form -->
+      <form id="survey-form" class="vku-card" novalidate>
+        <div class="form-grid two-cols">
+
+          <!-- Building / Zone -->
+          <div class="form-group">
+            <label for="field-building" class="form-label">
+              <span>Tòa nhà / Phân khu VKU <span class="required">*</span></span>
+              <span class="label-hint">Địa điểm kiểm định</span>
+            </label>
+            <select id="field-building" class="form-control" required>
+              <option value="">-- Chọn tòa nhà / phân khu --</option>
+              <option value="khu_a">Khu Giảng đường A (Hành chính & Lý thuyết)</option>
+              <option value="khu_v">Tòa nhà V - Viện Khoa học & Công nghệ số</option>
+              <option value="khu_k">Tòa nhà K - Kỹ thuật MT & Điện tử</option>
+              <option value="thu_vien">Trung tâm Học liệu & Thư viện số VKU</option>
+              <option value="ktx_k1">Ký túc xá Sinh viên K1 & K2</option>
+              <option value="san_vd">Nhà thi đấu thể thao & Sân vận động</option>
+              <option value="hoi_truong">Hội trường lớn & Dịch vụ sinh viên</option>
+            </select>
+          </div>
+
+          <!-- Room / Specific Spot -->
+          <div class="form-group">
+            <label for="field-room" class="form-label">
+              <span>Phòng / Khu vực cụ thể <span class="required">*</span></span>
+              <span class="label-hint">Ví dụ: A.101, V.203, KTX K1-302</span>
+            </label>
+            <input type="text" id="field-room" class="form-control" placeholder="VD: V.203 - Lab Đa nền tảng" required>
+          </div>
+
+          <!-- Facility Category -->
+          <div class="form-group">
+            <label for="field-category" class="form-label">
+              <span>Hạng mục trang thiết bị <span class="required">*</span></span>
+              <span class="label-hint">Phân loại kỹ thuật</span>
+            </label>
+            <select id="field-category" class="form-control" required>
+              <option value="">-- Chọn loại thiết bị --</option>
+              <option value="it_projector">Máy chiếu & Thiết bị CNTT (Projector, PC, Màn chiếu)</option>
+              <option value="hvac_cooling">Máy lạnh & Hệ thống điều hòa không khí</option>
+              <option value="electrical_lighting">Điện chiếu sáng, Quạt trần & Ổ cắm điện</option>
+              <option value="network_wifi">Hạ tầng mạng & Điểm phát Wifi Access Point</option>
+              <option value="furniture">Bàn ghế, Bục giảng & Nội thất phòng học</option>
+              <option value="doors_windows">Cửa chính, Cửa sổ, Kính & Ổ khóa</option>
+              <option value="fire_safety">Hệ thống PCCC & Bình chữa cháy</option>
+              <option value="sanitary">Khu vệ sinh, Cấp thoát nước & Rác thải</option>
+            </select>
+          </div>
+
+          <!-- Specific Facility / Asset Name -->
+          <div class="form-group">
+            <label for="field-facility-name" class="form-label">
+              <span>Tên trang thiết bị cụ thể <span class="required">*</span></span>
+              <span class="label-hint">Nhãn hiệu hoặc mã tài sản</span>
+            </label>
+            <input type="text" id="field-facility-name" class="form-control" placeholder="VD: Máy chiếu Panasonic PT-LB300" required>
+          </div>
+
+          <!-- Severity Rating (3 Radio Cards) -->
+          <div class="form-group span-full">
+            <label class="form-label">
+              <span>Mức độ tình trạng / Hỏng hóc <span class="required">*</span></span>
+              <span class="label-hint">Đánh giá mức độ cần can thiệp</span>
+            </label>
+            <div class="severity-group">
+              <label class="severity-card card-good">
+                <input type="radio" name="severity" value="good">
+                <span class="severity-icon">🟢</span>
+                <span class="severity-title">Bình thường / Tốt</span>
+                <span class="severity-subtitle">Hoạt động ổn định, đạt chuẩn</span>
+              </label>
+
+              <label class="severity-card card-warning selected">
+                <input type="radio" name="severity" value="warning" checked>
+                <span class="severity-icon">🟡</span>
+                <span class="severity-title">Cần bảo trì</span>
+                <span class="severity-subtitle">Hoạt động kém, cần sửa chữa</span>
+              </label>
+
+              <label class="severity-card card-critical">
+                <input type="radio" name="severity" value="critical">
+                <span class="severity-icon">🔴</span>
+                <span class="severity-title">Hỏng khẩn cấp</span>
+                <span class="severity-subtitle">Nguy cơ cháy nổ, ngưng trệ ca học</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group span-full">
+            <label for="field-description" class="form-label">
+              <span>Mô tả chi tiết hiện trạng & sự cố <span class="required">*</span></span>
+              <span class="label-hint">Nêu rõ triệu chứng, hiện tượng</span>
+            </label>
+            <textarea id="field-description" class="form-control" placeholder="Mô tả cụ thể hiện tượng (VD: Máy chiếu bị sọc vàng màn hình, bóng đèn chớp tắt, điều hòa chảy nước xuống bàn sinh viên...)" required></textarea>
+          </div>
+
+          <!-- Recommendation -->
+          <div class="form-group span-full">
+            <label for="field-recommendation" class="form-label">
+              <span>Đề xuất giải pháp khắc phục (Tùy chọn)</span>
+              <span class="label-hint">Ý kiến kiến nghị</span>
+            </label>
+            <input type="text" id="field-recommendation" class="form-control" placeholder="VD: Thay bóng đèn mới trước ngày 25/09, thông tắc ống thoát nước...">
+          </div>
+
+          <!-- Photo Capture Widget -->
+          <div class="form-group span-full">
+            <label class="form-label">
+              <span>Hình ảnh minh chứng thực địa (Chụp trực tiếp hoặc từ thư viện)</span>
+              <span class="label-hint">Nén tự động, lưu trữ an toàn trong IndexedDB</span>
+            </label>
+            <div class="photo-uploader">
+              <div class="photo-actions-row">
+                <label class="btn-camera">
+                  <span>📸</span>
+                  <span>Chụp ảnh / Chọn tệp ảnh</span>
+                  <input type="file" id="photo-input" accept="image/*" capture="environment" multiple style="display:none;">
+                </label>
+              </div>
+              <div id="photo-preview-grid" class="photo-preview-grid"></div>
+            </div>
+          </div>
+
+          <!-- Geolocation Widget -->
+          <div class="form-group span-full">
+            <label class="form-label">
+              <span>Tọa độ GPS & Phân vùng địa lý thực địa</span>
+              <span class="label-hint">Tự động nhận diện phân khu VKU</span>
+            </label>
+            <div class="geo-widget">
+              <div class="geo-info">
+                <div id="geo-zone-text" class="geo-zone">
+                  <span>📍</span>
+                  <span>Đang dò vị trí khuôn viên VKU...</span>
+                </div>
+                <div id="geo-coords-text" class="geo-coords">Tọa độ: Đang tính toán...</div>
+              </div>
+              <button type="button" id="btn-refresh-geo" class="btn-refresh-geo">
+                <span>🔄</span>
+                <span>Quét lại GPS</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Inspector Name & ID -->
+          <div class="form-group">
+            <label for="field-inspector-name" class="form-label">
+              <span>Họ tên cán bộ / Sinh viên kiểm tra</span>
+              <span class="label-hint">Người lập biên bản</span>
+            </label>
+            <input type="text" id="field-inspector-name" class="form-control" placeholder="VD: Nguyễn Văn A">
+          </div>
+
+          <div class="form-group">
+            <label for="field-inspector-id" class="form-label">
+              <span>Mã số sinh viên / Cán bộ (MSCB/MSSV)</span>
+              <span class="label-hint">Định danh người kiểm định</span>
+            </label>
+            <input type="text" id="field-inspector-id" class="form-control" placeholder="VD: 21IT089 hoặc VKU-CB-12">
+          </div>
+
+        </div>
+
+        <!-- Submit Bar -->
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+          <button type="reset" class="btn btn-secondary">Nhập lại</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-survey">
+            <span>💾</span>
+            <span>Lưu biên bản khảo sát (Offline)</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- VIEW 2: INSPECTIONS LIST & HISTORY -->
+    <section id="view-surveys-list" class="app-view-section">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">
+            <span>📋</span>
+            <span>Danh sách biên bản khảo sát</span>
+          </h2>
+          <p class="view-desc">Quản lý và tra cứu toàn bộ hồ sơ cơ sở vật chất đã ghi nhận</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="window.location.hash='new-survey'">
+          + Khảo sát mới
+        </button>
+      </div>
+
+      <!-- Filter & Search Toolbar -->
+      <div class="filter-toolbar">
+        <div class="search-input-wrap">
+          <svg class="search-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="filter-search" class="form-control" placeholder="Tìm kiếm phòng, thiết bị, người kiểm tra...">
+        </div>
+
+        <div class="filter-selects-wrap">
+          <select id="filter-building" class="form-control filter-select">
+            <option value="all">Tất cả tòa nhà</option>
+            <option value="khu_a">Khu Giảng đường A</option>
+            <option value="khu_v">Tòa nhà V</option>
+            <option value="khu_k">Tòa nhà K</option>
+            <option value="thu_vien">Thư viện số</option>
+            <option value="ktx_k1">Ký túc xá K1/K2</option>
+            <option value="san_vd">Sân vận động</option>
+            <option value="hoi_truong">Hội trường</option>
+          </select>
+
+          <select id="filter-severity" class="form-control filter-select">
+            <option value="all">Tất cả mức độ</option>
+            <option value="critical">🔴 Khẩn cấp</option>
+            <option value="warning">🟡 Cần bảo trì</option>
+            <option value="good">🟢 Bình thường</option>
+          </select>
+
+          <select id="filter-sync" class="form-control filter-select">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="pending_sync">⏳ Chờ đồng bộ</option>
+            <option value="synced">✓ Đã lên Cloud</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Cards Container -->
+      <div id="inspections-list-container" class="inspections-list"></div>
+    </section>
+
+    <!-- VIEW 3: DASHBOARD & STATISTICS -->
+    <section id="view-stats" class="app-view-section">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">
+            <span>📊</span>
+            <span>Bảng điều khiển & Thống kê CSVC</span>
+          </h2>
+          <p class="view-desc">Tổng hợp tình trạng trang thiết bị kỹ thuật tại các phân khu VKU</p>
+        </div>
+
+        <!-- Export buttons -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button type="button" id="btn-export-csv" class="btn btn-secondary" style="font-size: 0.85rem; padding: 8px 14px;">
+            <span>📥</span>
+            <span>Xuất Excel (CSV)</span>
+          </button>
+          <button type="button" id="btn-export-json" class="btn btn-secondary" style="font-size: 0.85rem; padding: 8px 14px;">
+            <span>💾</span>
+            <span>Xuất JSON</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 KPI Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrap">📋</div>
+          <div class="stat-content">
+            <span id="stat-total" class="stat-value">0</span>
+            <span class="stat-label">Tổng số biên bản</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-critical">
+          <div class="stat-icon-wrap" style="color: var(--status-critical);">🔴</div>
+          <div class="stat-content">
+            <span id="stat-critical" class="stat-value">0</span>
+            <span class="stat-label">Hỏng hóc khẩn cấp</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-pending">
+          <div class="stat-icon-wrap" style="color: var(--status-warning);">⏳</div>
+          <div class="stat-content">
+            <span id="stat-pending" class="stat-value">0</span>
+            <span class="stat-label">Đang chờ đồng bộ</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-synced">
+          <div class="stat-icon-wrap" style="color: var(--status-good);">☁️</div>
+          <div class="stat-content">
+            <span id="stat-synced" class="stat-value">0</span>
+            <span class="stat-label">Đã đồng bộ Cloud</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Condition Distribution -->
+      <div class="vku-card">
+        <h3 style="font-size: 1.05rem; color: #FFFFFF; margin-bottom: 4px;">Tỷ lệ phân bổ hiện trạng thiết bị</h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted);">Đánh giá tỷ lệ thiết bị bình thường, cần sửa chữa và hỏng khẩn cấp</p>
+
+        <div class="progress-bar-container">
+          <div id="prog-good" class="progress-segment progress-good" style="width: 50%;"></div>
+          <div id="prog-warning" class="progress-segment progress-warning" style="width: 30%;"></div>
+          <div id="prog-critical" class="progress-segment progress-critical" style="width: 20%;"></div>
+        </div>
+
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; margin-top: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--status-good);"></span>
+            <span>Bình thường / Tốt</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--status-warning);"></span>
+            <span>Cần bảo trì</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--status-critical);"></span>
+            <span>Khẩn cấp / Hỏng nặng</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Building Breakdown -->
+      <div class="vku-card">
+        <h3 style="font-size: 1.05rem; color: #FFFFFF; margin-bottom: 4px;">Số lượng khảo sát theo tòa nhà</h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted);">Phân bố hồ sơ kiểm tra trên các khu vực chức năng khuôn viên trường VKU</p>
+        <div id="building-breakdown-list" class="breakdown-list"></div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: SETTINGS & GUIDELINES -->
+    <section id="view-settings" class="app-view-section">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">
+            <span>⚙️</span>
+            <span>Cài đặt & Hướng dẫn</span>
+          </h2>
+          <p class="view-desc">Cấu hình thông số kỹ thuật, quản lý bộ nhớ đệm và xem tài liệu dự án</p>
+        </div>
+      </div>
+
+      <!-- App & PWA Status Card -->
+      <div class="vku-card">
+        <h3 style="font-size: 1.05rem; color: #FFFFFF; margin-bottom: 12px;">Thông tin PWA & Bộ nhớ cục bộ</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
+            <span style="color: var(--text-muted);">Tên ứng dụng:</span>
+            <span style="font-weight: 600; color: #FFFFFF;">VKU Field Survey PWA</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
+            <span style="color: var(--text-muted);">Phiên bản (Version):</span>
+            <span style="font-weight: 600; color: var(--vku-gold);">1.0.0 (Offline-First Edition)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
+            <span style="color: var(--text-muted);">Service Worker Cache:</span>
+            <span style="font-weight: 600; color: #38BDF8;">vku-survey-v1.0.0 (Cache-First)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
+            <span style="color: var(--text-muted);">Cơ sở dữ liệu Offline:</span>
+            <span style="font-weight: 600; color: #10B981;">IndexedDB (VKU_FieldSurvey_DB)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding-bottom: 4px;">
+            <span style="color: var(--text-muted);">Capacitor APK Bridge:</span>
+            <span style="font-weight: 600; color: #F59E0B;">Sẵn sàng đóng gói (Ready)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Tools Card -->
+      <div class="vku-card">
+        <h3 style="font-size: 1.05rem; color: #FFFFFF; margin-bottom: 12px;">Công cụ dữ liệu & Thử nghiệm</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+          Bạn có thể nạp dữ liệu mẫu để kiểm tra các tính năng lọc, biểu đồ và xuất báo cáo, hoặc làm sạch bộ nhớ để bắt đầu ca kiểm tra mới.
+        </p>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button type="button" id="btn-seed-data" class="btn btn-secondary">
+            <span>🌱</span>
+            <span>Nạp lại bộ dữ liệu mẫu VKU</span>
+          </button>
+          <button type="button" id="btn-clear-data" class="btn btn-danger">
+            <span>🗑️</span>
+            <span>Xóa toàn bộ dữ liệu Offline</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Technical Report Quick Link -->
+      <div class="vku-card" style="border: 1px solid rgba(253, 185, 19, 0.3); background: rgba(253, 185, 19, 0.05);">
+        <h3 style="font-size: 1.05rem; color: var(--vku-gold); margin-bottom: 8px;">
+          <span>📄</span>
+          <span>Báo cáo kỹ thuật (Technical Report)</span>
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+          Báo cáo kỹ thuật 2–4 trang theo chuẩn môn học <em>"Phát triển ứng dụng đa nền tảng"</em> đã được chuẩn bị đầy đủ với giao diện in và xuất PDF tự động.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="./report/report.html" target="_blank" class="btn btn-gold" style="font-size: 0.85rem; padding: 10px 18px;">
+            <span>🖨️</span>
+            <span>Mở Báo Cáo Kỹ Thuật (Print/PDF)</span>
+          </a>
+          <a href="./README.md" target="_blank" class="btn btn-secondary" style="font-size: 0.85rem; padding: 10px 18px;">
+            <span>📖</span>
+            <span>Xem tài liệu README</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar (Active for mobile & Capacitor wrap) -->
+  <nav class="mobile-bottom-nav" aria-label="Thanh điều hướng di động">
+    <button type="button" class="mobile-nav-item active" data-tab="new-survey">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      <span>Khảo sát</span>
+    </button>
+    <button type="button" class="mobile-nav-item" data-tab="surveys-list">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      <span>Danh sách</span>
+    </button>
+    <button type="button" class="mobile-nav-item" data-tab="stats">
+      <svg viewBox="0 0 24 24"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+      <span>Thống kê</span>
+    </button>
+    <button type="button" class="mobile-nav-item" data-tab="settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span>Cài đặt</span>
+    </button>
+  </nav>
+
+  <!-- MODAL: Inspection Detail & Print Preview -->
+  <div id="modal-inspection-detail" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Chi tiết biên bản khảo sát</h3>
+        <button type="button" class="modal-close-btn" aria-label="Đóng modal">✕</button>
+      </div>
+      <div id="modal-detail-content" class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" id="btn-print-inspection" class="btn btn-secondary" style="font-size: 0.85rem; padding: 8px 16px;">
+          <span>🖨️</span>
+          <span>In biên bản</span>
+        </button>
+        <button type="button" class="btn btn-primary modal-close-btn" style="font-size: 0.85rem; padding: 8px 16px;">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Full-size Photo Preview -->
+  <div id="modal-image-preview" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-dialog" style="max-width: 800px; background: #000000;">
+      <div class="modal-header">
+        <h3 id="preview-modal-title" class="modal-title">Xem ảnh khảo sát</h3>
+        <button type="button" class="modal-close-btn" aria-label="Đóng">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 0; display: flex; align-items: center; justify-content: center; min-height: 320px;">
+        <img id="preview-modal-img" src="" alt="Ảnh khảo sát lớn" style="max-width: 100%; max-height: 75vh; object-fit: contain;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript Module -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

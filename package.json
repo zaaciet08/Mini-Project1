@@ -1,0 +1,27 @@
+{
+  "name": "vku-field-survey-pwa",
+  "version": "1.0.0",
+  "description": "Offline-first inspection form for campus facilities at VKU with zero network connectivity",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host --port 4173",
+    "generate-icons": "node scripts/generate-icons.js"
+  },
+  "keywords": [
+    "pwa",
+    "offline-first",
+    "indexeddb",
+    "service-worker",
+    "field-survey",
+    "vku",
+    "capacitor"
+  ],
+  "author": "VKU Student - Phát triển ứng dụng đa nền tảng",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.4.2"
+  }
+}

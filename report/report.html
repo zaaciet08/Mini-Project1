@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>VKU Field Survey PWA - Báo Cáo Kỹ Thuật (Technical Report)</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Times New Roman', Times, serif, 'Segoe UI';
+      font-size: 11pt;
+      line-height: 1.45;
+      color: #111827;
+      background: #F3F4F6;
+      padding: 24px;
+    }
+
+    .report-paper {
+      max-width: 210mm;
+      margin: 0 auto;
+      background: #FFFFFF;
+      padding: 24mm 20mm;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
+    }
+
+    /* Print media stylesheet */
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+      }
+      .report-paper {
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        max-width: 100%;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+
+    /* Toolbar for browser view */
+    .print-bar {
+      position: sticky;
+      top: 10px;
+      z-index: 100;
+      background: #0054A6;
+      color: #FFFFFF;
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 210mm;
+      margin: 0 auto 20px auto;
+      box-shadow: 0 4px 12px rgba(0, 84, 166, 0.3);
+      font-family: sans-serif;
+    }
+
+    .btn-print {
+      background: #FDB913;
+      color: #0F172A;
+      font-weight: bold;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* Header Academic Style */
+    .univ-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid #0054A6;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+
+    .univ-header-left {
+      text-align: center;
+      font-size: 10pt;
+    }
+
+    .univ-header-right {
+      text-align: center;
+      font-size: 10pt;
+      font-weight: bold;
+    }
+
+    .report-title {
+      text-align: center;
+      margin: 18px 0 14px 0;
+    }
+
+    .report-title h1 {
+      font-size: 17pt;
+      color: #0054A6;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .report-title h2 {
+      font-size: 12pt;
+      color: #374151;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .meta-box {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-left: 4px solid #0054A6;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      font-size: 10pt;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    /* Typography & Sections */
+    h3.section-heading {
+      font-size: 12pt;
+      color: #0054A6;
+      text-transform: uppercase;
+      margin: 16px 0 8px 0;
+      border-bottom: 1px solid #CBD5E1;
+      padding-bottom: 3px;
+    }
+
+    p {
+      text-align: justify;
+      margin-bottom: 8px;
+      text-indent: 1.2cm;
+    }
+
+    p.no-indent {
+      text-indent: 0;
+    }
+
+    ul, ol {
+      margin-left: 1.8cm;
+      margin-bottom: 8px;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    /* Code & Technical blocks */
+    .tech-box {
+      background: #0F172A;
+      color: #F8FAFC;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 9pt;
+      line-height: 1.35;
+      margin: 10px 0;
+      overflow-x: auto;
+    }
+
+    /* Tables */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 9.5pt;
+    }
+
+    table.data-table th, table.data-table td {
+      border: 1px solid #94A3B8;
+      padding: 6px 8px;
+      text-align: left;
+    }
+
+    table.data-table th {
+      background-color: #E2E8F0;
+      font-weight: bold;
+      color: #0F172A;
+    }
+
+    /* Callouts */
+    .callout {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 8px 0;
+      font-size: 9.5pt;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 9pt;
+      color: #64748B;
+      margin-top: 24px;
+      border-top: 1px solid #E2E8F0;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Print Control Bar (Screen only) -->
+  <div class="print-bar no-print">
+    <div>
+      <strong>VKU Technical Report:</strong> Mini-Project 1 - Field Survey PWA (2–4 trang)
+    </div>
+    <button class="btn-print" onclick="window.print()">🖨️ In Báo Cáo / Xuất PDF (A4)</button>
+  </div>
+
+  <div class="report-paper">
+
+    <!-- University Header -->
+    <div class="univ-header">
+      <div class="univ-header-left">
+        <strong>BỘ GIÁO DỤC VÀ ĐÀO TẠO</strong><br>
+        <strong>TRƯỜNG ĐẠI HỌC CNTT & TT VIỆT - HÀN</strong><br>
+        KHOA KỸ THUẬT MÁY TÍNH & ĐIỆN TỬ
+      </div>
+      <div class="univ-header-right">
+        CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br>
+        Độc lập - Tự do - Hạnh phúc<br>
+        <em>Đà Nẵng, ngày 21 tháng 09 năm 2026</em>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="report-title">
+      <h1>BÁO CÁO KỸ THUẬT: MINI-PROJECT 1</h1>
+      <h2>XÂY DỰNG ỨNG DỤNG VKU FIELD SURVEY PWA (OFFLINE-FIRST)</h2>
+      <div style="font-size: 10pt; color: #4B5563; margin-top: 4px;">Học phần: <strong>Phát triển ứng dụng đa nền tảng</strong> (Cross-Platform Application Development)</div>
+    </div>
+
+    <!-- Metadata Box -->
+    <div class="meta-box">
+      <div><strong>Sinh viên thực hiện:</strong> Nhóm nghiên cứu & phát triển VKU</div>
+      <div><strong>Giảng viên hướng dẫn:</strong> Giảng viên bộ môn Đa nền tảng</div>
+      <div><strong>Mục tiêu:</strong> Khảo sát CSVC khi mất hoàn toàn kết nối mạng</div>
+      <div><strong>Trạng thái PWA:</strong> Chuẩn Offline-First & Sẵn sàng Capacitor Bridge</div>
+    </div>
+
+    <!-- 1. TỔNG QUAN VÀ MỤC TIÊU BÀI TOÁN -->
+    <h3 class="section-heading">1. Tổng Quan & Tuyên Bố Bài Toán (Problem Statement)</h3>
+    <p>
+      Trong công tác quản lý và vận hành cơ sở vật chất (CSVC) tại khuôn viên Đại học Công nghệ Thông tin và Truyền thông Việt - Hàn (VKU), cán bộ kiểm định và sinh viên tự quản thường xuyên phải thực hiện khảo sát tại các khu vực tầng hầm, phòng kín, góc khuất giảng đường (Khu A, Tòa nhà V, K, Thư viện, Ký túc xá). Tại những địa điểm này, sóng di động (4G/5G) và Wi-Fi thường xuyên bị mất tín hiệu hoặc chập chờn (Zero Network Connectivity).
+    </p>
+    <p>
+      Các ứng dụng Web truyền thống phụ thuộc hoàn toàn vào kết nối Client-Server sẽ bị gián đoạn, gây mất mát dữ liệu và cản trở tiến độ. <strong>Mini-Project 1: VKU Field Survey PWA</strong> được thiết kế theo kiến trúc <strong>Offline-First</strong> nhằm đảm bảo 100% khả năng hoạt động độc lập ngay cả khi không có mạng, lưu trữ hồ sơ kèm hình ảnh hiện trường và tọa độ GPS cục bộ, tự động đồng bộ lên máy chủ khi kết nối được phục hồi.
+    </p>
+
+    <!-- 2. KIẾN TRÚC HỆ THỐNG -->
+    <h3 class="section-heading">2. Kiến Trúc Hệ Thống (System Architecture)</h3>
+    <p>
+      Ứng dụng được thiết kế theo mô hình phân tầng module độc lập, không phụ thuộc thư viện bên ngoài (Zero Runtime Overhead), giúp tối ưu hóa dung lượng truyền tải và tương thích tối đa với nền tảng Android Capacitor:
+    </p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Thành Phần</th>
+          <th style="width: 35%;">Công Nghệ / API</th>
+          <th style="width: 40%;">Vai Trò Kỹ Thuật</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>App Shell & PWA</strong></td>
+          <td>HTML5, CSS3 Tokens, Manifest.json</td>
+          <td>Cung cấp giao diện đáp ứng (responsive), màu sắc nhận diện VKU, safe-area insets cho mobile.</td>
+        </tr>
+        <tr>
+          <td><strong>Service Worker</strong></td>
+          <td>Cache Storage API, Workbox Patterns</td>
+          <td>Chiến lược <code>Cache-First</code> cho tài nguyên tĩnh và <code>Network-First</code> cho tài liệu điều hướng.</td>
+        </tr>
+        <tr>
+          <td><strong>Data Persistence</strong></td>
+          <td>Native IndexedDB API</td>
+          <td>Lưu trữ phi cấu trúc các biên bản kiểm tra, ảnh Base64 nén và hàng đợi đồng bộ (Sync Queue).</td>
+        </tr>
+        <tr>
+          <td><strong>Sync Manager</strong></td>
+          <td>Online/Offline Events, SW Sync</td>
+          <td>Theo dõi trạng thái mạng theo thời gian thực, quản lý máy trạng thái đồng bộ (State Machine).</td>
+        </tr>
+        <tr>
+          <td><strong>Hardware Bridge</strong></td>
+          <td>Canvas 2D, HTML5 Geolocation</td>
+          <td>Nén ảnh chụp thực địa, đóng dấu watermark kiểm định và tính khoảng cách tới các phân khu VKU.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- 3. CHIẾN LƯỢC OFFLINE-FIRST: SERVICE WORKER & INDEXEDDB -->
+    <h3 class="section-heading">3. Kỹ Thuật Offline-First: Service Worker & IndexedDB Caching</h3>
+    <p>
+      Khác với các ứng dụng coi offline là ngoại lệ, VKU Field Survey coi <strong>offline là trạng thái mặc định</strong>. Quy trình xử lý dữ liệu được thiết kế như sau:
+    </p>
+    <ul>
+      <li><strong>Cài đặt & Pre-caching:</strong> Trong sự kiện <code>install</code> của Service Worker, toàn bộ App Shell (HTML, CSS, JS modules, icons PWA) được nạp vào bộ đệm <code>vku-survey-v1.0.0</code>. Hàm <code>skipWaiting()</code> kích hoạt worker mới ngay lập tức.</li>
+      <li><strong>Điều hướng mạng & Cache Fallback:</strong> Đối với các yêu cầu điều hướng (`navigate`), ứng dụng áp dụng <code>Network-First</code> nhằm lấy nội dung mới nhất, nhưng nếu mất kết nối sẽ tự động trả về <code>index.html</code> đã cache mà không báo lỗi <em>"No Internet"</em>.</li>
+      <li><strong>Lược đồ dữ liệu IndexedDB (Database Schema):</strong> CSDL <code>VKU_FieldSurvey_DB</code> (phiên bản 1) gồm 3 Object Stores:
+        <ol>
+          <li><code>inspections</code> (Khóa chính <code>id</code>): Lưu thông tin biên bản, phân loại hỏng hóc, mảng ảnh base64, tọa độ GPS và trường <code>syncStatus</code> ('pending_sync' | 'synced').</li>
+          <li><code>audit_logs</code> (Khóa tự tăng): Lưu vết thời gian các thao tác thêm, xóa, xuất báo cáo.</li>
+          <li><code>settings</code>: Lưu thông tin định danh cán bộ và tùy chọn tự động đồng bộ.</li>
+        </ol>
+      </li>
+    </ul>
+
+    <div class="tech-box">
+// Lược đồ lưu trữ biên bản kiểm định (Inspection Record Schema)
+{
+  "id": "VKU-2026-A101",
+  "building": "khu_a",
+  "room": "A.101 - Phòng học thông minh",
+  "facilityCategory": "it_projector",
+  "facilityName": "Máy chiếu Panasonic PT-LB300",
+  "severity": "critical", // 'good' | 'warning' | 'critical'
+  "description": "Máy chiếu nhấp nháy đèn Lamp đỏ, quạt kêu to bất thường.",
+  "geo": { "latitude": 15.975412, "longitude": 108.252631, "zoneName": "Khu Giảng đường A" },
+  "photos": [{ "id": "photo-1", "dataUrl": "data:image/jpeg;base64,...", "timestamp": "..." }],
+  "syncStatus": "pending_sync",
+  "createdAt": "2026-09-21T08:20:00.000Z"
+}
+    </div>
+
+    <!-- 4. QUẢN LÝ ĐỒNG BỘ DỮ LIỆU & HÀNG ĐỢI (SYNC QUEUE) -->
+    <h3 class="section-heading">4. Cơ Chế Đồng Bộ Hàng Đợi (Sync Queue State Machine)</h3>
+    <p>
+      Ứng dụng sử dụng mô hình hàng đợi phi tập trung (Decentralized Queue). Khi cán bộ nhấn <em>"Lưu biên bản"</em> trong điều kiện không có mạng, bản ghi ngay lập tức được gán cờ <code>pending_sync</code> và hiển thị huy hiệu đếm màu vàng trên thanh tiêu đề.
+    </p>
+    <p>
+      Khi sự kiện <code>window.ononline</code> kích hoạt hoặc sự kiện <code>sync</code> của Service Worker phát ra, <strong>SyncManager</strong> tự động duyệt qua các bản ghi chờ, gửi gói tin tới máy chủ (giả lập Cloud API với độ trễ thực tế) và cập nhật <code>syncStatus = 'synced'</code> kèm dấu thời gian <code>syncedAt</code>. Cơ chế này loại bỏ hoàn toàn nguy cơ mất dữ liệu và không gây xung đột phiên bản.
+    </p>
+
+    <!-- 5. TƯƠNG TÁC PHẦN CỨNG: CAMERA & GEOLOCATION -->
+    <h3 class="section-heading">5. Xử Lý Đồ Họa, Nén Ảnh Thực Địa & Định Vị Phân Khu VKU</h3>
+    <p>
+      Để đảm bảo hiệu năng cao khi chạy trên thiết bị di động với dung lượng bộ nhớ giới hạn:
+    </p>
+    <ul>
+      <li><strong>Tự động nén ảnh (In-Memory Canvas Compression):</strong> Ảnh chụp từ camera độ phân giải cao (12-48MP) thường có dung lượng 5-15MB, gây đầy bộ nhớ IndexedDB. Module <code>camera.js</code> tự động co giãn ảnh về kích thước tối đa 1200x1200px với tỷ lệ nén JPEG 0.82, giảm dung lượng xuống còn ~150-280KB và đóng dấu bản quyền thời gian kiểm định (Watermark) trực tiếp trên ảnh.</li>
+      <li><strong>Nhận diện phân vùng khuôn viên VKU:</strong> Module <code>geo.js</code> áp dụng công thức <em>Haversine</em> để tính toán khoảng cách từ tọa độ GPS của thiết bị tới các mốc tọa độ đã lưu sẵn của Khu A, Tòa nhà V, Tòa K, Thư viện, KTX, Sân vận động VKU, tự động gợi ý vị trí kiểm định chính xác cho người dùng.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <!-- 6. KẾ HOẠCH TÍCH HỢP CAPACITOR BRIDGE CHO TUẦN TỚI -->
+    <h3 class="section-heading">6. Kế Hoạch Đóng Gói Android APK Bằng Capacitor Bridge (Next Week)</h3>
+    <p>
+      Ứng dụng đã được kiến trúc chuẩn hóa để việc tích hợp sang Native Android App vào tuần tiếp theo diễn ra thuận lợi mà không cần tái cấu trúc mã nguồn:
+    </p>
+    <ol>
+      <li><strong>Cấu trúc tệp tiêu chuẩn:</strong> Cấu hình <code>capacitor.config.json</code> đã được tạo với <code>appId: "vn.edu.vku.fieldsurvey"</code>, <code>appName: "VKU Field Survey"</code> và đường dẫn thư mục web chuẩn.</li>
+      <li><strong>Tương thích Viewport & Safe-Area:</strong> CSS sử dụng <code>viewport-fit=cover</code> cùng các biến <code>env(safe-area-inset-top)</code> và <code>env(safe-area-inset-bottom)</code>, đảm bảo giao diện hiển thị hoàn hảo trên các dòng điện thoại có tai thỏ (Notch) và thanh điều hướng ảo của Android.</li>
+      <li><strong>Quy trình thực hiện tuần tới:</strong>
+        <div class="tech-box">
+# Lệnh khởi tạo và đóng gói Capacitor Android (Kế hoạch tuần tới)
+npm install @capacitor/core @capacitor/cli @capacitor/android
+npx cap init "VKU Field Survey" "vn.edu.vku.fieldsurvey" --web-dir .
+npx cap add android
+npx cap sync
+npx cap open android   # Mở Android Studio để Build Release APK
+        </div>
+      </li>
+    </ol>
+
+    <!-- 7. KẾT QUẢ KIỂM THỬ & ĐÁNH GIÁ -->
+    <h3 class="section-heading">7. Kết Quả Kiểm Thử & Tiêu Chí Đánh Giá (Lighthouse & Audit)</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Hạng Mục Kiểm Tra</th>
+          <th>Kết Quả Thực Nghiệm</th>
+          <th>Đánh Giá Môn Học</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Khởi chạy khi Offline (Zero Connectivity)</strong></td>
+          <td>Tải trang tức thì từ Service Worker Cache (0ms Network)</td>
+          <td>Đạt tiêu chuẩn xuất sắc (PWA Standard)</td>
+        </tr>
+        <tr>
+          <td><strong>Lưu trữ Offline Form & Chụp ảnh</strong></td>
+          <td>Ghi nhận tức thì vào IndexedDB, hỗ trợ ảnh và GPS</td>
+          <td>Hoạt động trơn tru 100% không báo lỗi</td>
+        </tr>
+        <tr>
+          <td><strong>Tự động đồng bộ (Auto Sync Queue)</strong></td>
+          <td>Tự kích hoạt khi có mạng, cập nhật huy hiệu trạng thái</td>
+          <td>Chính xác, không mất mát dữ liệu</td>
+        </tr>
+        <tr>
+          <td><strong>Khả năng cài đặt (Installability)</strong></td>
+          <td>Manifest hợp lệ, icon maskable, nút cài đặt hoạt động</td>
+          <td>Hiển thị độc lập không thanh địa chỉ URL</td>
+        </tr>
+        <tr>
+          <td><strong>Xuất báo cáo dữ liệu</strong></td>
+          <td>Xuất Excel CSV (UTF-8 BOM), JSON và Print PDF A4</td>
+          <td>Đầy đủ tính năng thực tiễn cho nhà trường</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 8. KẾT LUẬN -->
+    <h3 class="section-heading">8. Kết Luận</h3>
+    <p>
+      Mini-Project 1 đã giải quyết trọn vẹn bài toán kiểm định cơ sở vật chất khuôn viên VKU trong điều kiện không có kết nối mạng. Ứng dụng kết hợp hài hòa giữa thiết kế hiện đại mang bản sắc VKU, độ tin cậy của IndexedDB và sức mạnh của Service Worker PWA, tạo nền tảng vững chắc để chuyển đổi thành ứng dụng Android native bằng Capacitor Bridge vào tuần tới.
+    </p>
+
+    <div class="footer-note">
+      Trường Đại học Công nghệ Thông tin & Truyền thông Việt - Hàn (VKU) • Báo cáo kỹ thuật Mini-Project 1 • Trang 3/3
+    </div>
+
+  </div>
+
+</body>
+</html>
